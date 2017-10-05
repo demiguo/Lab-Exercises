@@ -1,0 +1,4 @@
+1.torchtext
+2.batch
+3.average loss (over batch)
+4.run on PTP dataset
