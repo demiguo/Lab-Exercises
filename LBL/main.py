@@ -26,7 +26,7 @@ def train(model, optimizer, data_iter, text_field, args):
 		target = batch.target[-1,:] 
 		batch_size = context.size(0)
 		if batch_idx == 0:
-			print "batch_size=", batch_size, "context.size()=", context.size(), " target.size()=", target.size()
+			print("batch_size=", batch_size, "context.size()=", context.size(), " target.size()=", target.size())
 
 		optimizer.zero_grad()
 		output = model(x)
@@ -72,12 +72,12 @@ def main():
 		# TODO: do we need to return model?
 		model, optimizer, avg_loss = train(model, optimizer, train_iter, text_field, args)
 		# TODO: evaluate
-		print "TRAIN [EPOCH %d]: AVG LOSS PER EXAMPLE %.5lf" % (epoch, avg_loss)
+		print("TRAIN [EPOCH %d]: AVG LOSS PER EXAMPLE %.5lf" % (epoch, avg_loss))
 		if epoch % 5 == 0:
 			avg_val_loss  = evaluate(val_iter, text_field, args)
 			avg_test_loss = evaluate(test_iter, text_field, args)
-			print "VALIDATE [EPOCH %d]: AVG LOSS PER EXAMPLE %.5lf" % (epoch, avg_val_loss)
-			print "TEST [EPOCH %d]: AVG LOSS PER EXAMPLE %.5lf" % (epoch, avg_test_loss)
+			print("VALIDATE [EPOCH %d]: AVG LOSS PER EXAMPLE %.5lf" % (epoch, avg_val_loss))
+			print("TEST [EPOCH %d]: AVG LOSS PER EXAMPLE %.5lf" % (epoch, avg_test_loss))
 
 if __name__ == "__main__":
 	main()
