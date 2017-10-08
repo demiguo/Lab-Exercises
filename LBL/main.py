@@ -35,7 +35,7 @@ def train(model, optimizer, data_iter, text_field, args):
 		avg_loss += loss.data.numpy()[0]
 		loss /= batch_size
 		total += batch_size
-		
+
 		loss.backward() # TODO: do i first get the avg loss?
 		optimizer.step()
 
@@ -56,6 +56,7 @@ def main():
 		# TODO: do we need to return model?
 		model, optimizer, avg_loss = train(model, optimizer, train_iter, text_field, args)
 		# TODO: evaluate
+		print "TRAIN [EPOCH %d]: AVG LOSS PER EXAMPLE %.5lf" % (epoch, avg_loss)
 
 
 if __name__ == "__main__":
