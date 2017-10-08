@@ -16,21 +16,25 @@ from config import args
 from model import LBL
 import utils
 
+from tqdm import tqdm
+
 def train(model, optimizer, data_iter, text_field, args):
 	model.train()
 	loss_function = nn.NLLLoss()
 	avg_loss = 0
 	total = 0
-	for batch_idx, batch in enumerate(data_iter):
+	print (len(data_iter))
+	[batch for batch in data_iter]
+	for batch_idx, batch in tqdm(enumerate(data_iter)):
 		# TODO: fix API based on torchtext output; make sure they are Variables
-		context = torch.transpose(batch.text, (0,1))
+		context = torch.transpose(batch.text, 0, 1)
 		target = batch.target[-1,:] 
 		batch_size = context.size(0)
-		if batch_idx == 0:
-			print("batch_size=", batch_size, "context.size()=", context.size(), " target.size()=", target.size())
+		#if batch_idx == 0:
+		#	print("batch_size=", batch_size, "context.size()=", context.size(), " target.size()=", target.size())
 
 		optimizer.zero_grad()
-		output = model(x)
+		output = model(context)
 
 		loss = loss_function(output, target)
 		avg_loss += loss.data.numpy()[0]
@@ -70,9 +74,9 @@ def main():
 									batch_size=args.batch_size, gpu=args.GPU, 
         							reuse=False, repeat=False, shuffle=True)
 
-	model = LBL(text_field.vectors, args.context_size)	
+	model = LBL(text_field.vocab.vectors, args.context_size)	
 	optimizer = optim.SGD(model.get_train_parameters(), lr=args.lr)
-	for epoch in range(args.epoch):
+	for epoch in range(args.epochs):
 		# TODO: do we need to return model?
 		model, optimizer, avg_loss = train(model, optimizer, train_iter, text_field, args)
 		# TODO: evaluate
