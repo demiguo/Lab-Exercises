@@ -2,3 +2,5 @@
 2.batch
 3.average loss (over batch)
 4.run on PTP dataset
+5.flake8 for style guide
+6.argparse
