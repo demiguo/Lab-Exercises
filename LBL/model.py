@@ -30,7 +30,7 @@ class LBL(nn.Module):
     def init_weight(self, pretrained_embeds):
         assert(pretrained_weights.size() == (self.vocab_size, self.hidden_size))
         self.embedding_layer.weight.data.copy_(pretrained_embeds)
-        self.output_layer.weight = torch.transpose(self.embedding_layer.weight, (0, 1))
+        self.output_layer.weight = torch.transpose(self.embedding_layer.weight, 0, 1)
 
     def forward(self, context_words):
         self.batch_size = context_words.size(0)

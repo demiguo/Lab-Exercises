@@ -49,7 +49,7 @@ def evaluate(data_iter, text_field, args):
 	total = 0
 	for batch_idx, batch in enumerate(data_iter):
 		# TODO: fix API based on torchtext output; make sure they are Variables
-		context = torch.transpose(batch.text, (0,1))
+		context = torch.transpose(batch.text, 0, 1)
 		target = batch.target[-1,:] 
 		batch_size = context.size(0)
 
