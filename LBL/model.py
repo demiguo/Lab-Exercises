@@ -7,10 +7,10 @@ import numpy as np
 import re
 
 class LBL(nn.Module):
-    def __init__(self, pretrained_embeds, args):
+    def __init__(self, pretrained_embeds, context_size):
         super(LBL, self).__init__()
 
-        self.context_size = args.context_size. # n in the paper
+        self.context_size = context_size # n in the paper
         self.hidden_size = embeds.size(1)
         self.vocab_size = embeds.size(0)
 

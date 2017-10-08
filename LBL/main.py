@@ -66,7 +66,7 @@ def main():
 	# TODO: change this API according to utils.py implementation
 	train_iter, val_iter, test_iter, text_field = utils.load_ptb(args)
 
-	model = LBL(text_field.vectors, args)	
+	model = LBL(text_field.vectors, args.context_size)	
 	optimizer = optim.SGD(model.get_train_parameters(), lr=args.lr)
 	for epoch in range(args.epoch):
 		# TODO: do we need to return model?
