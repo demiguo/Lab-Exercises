@@ -44,4 +44,4 @@ class LBL(nn.Module):
         assert raw_outputs.size() == (self.batch_size, self.vocab_size)
         outputs = F.log_softmax(raw_outputs)
         assert outputs.size() == (self.batch_size, self.vocab_size)
-
+        return outputs
