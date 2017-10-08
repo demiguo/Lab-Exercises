@@ -65,7 +65,10 @@ def evaluate(data_iter, text_field, args):
 
 def main():
 	# TODO: change this API according to utils.py implementation
-	train_iter, val_iter, test_iter, text_field = utils.load_ptb(args)
+	train_iter, val_iter, test_iter, text_field = utils.load_ptb(ptb_path='data.zip', 
+									ptb_dir='data', bptt_len=args.context_size, 
+									batch_size=args.batch_size, gpu=args.GPU, 
+        							reuse=False, repeat=False, shuffle=True)
 
 	model = LBL(text_field.vectors, args.context_size)	
 	optimizer = optim.SGD(model.get_train_parameters(), lr=args.lr)
