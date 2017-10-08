@@ -27,10 +27,10 @@ def load_ptb(ptb_path='data.zip', ptb_dir='data', bptt_len=5, batch_size=1, gpu=
     val = datasets.LanguageModelingDataset(os.path.join(ptb_dir, 'valid.txt'), text_field, newline_eos=False)
     test = datasets.LanguageModelingDataset(os.path.join(ptb_dir, 'test.txt'), text_field, newline_eos=False)
     
-	train_iter, val_iter, test_iter = data.BPTTIterator.splits(
-		    (train, val, test), batch_size=batch_size, bptt_len=bptt_len, device=DEV, repeat=repeat,
-		    shuffle=shuffle)
+    train_iter, val_iter, test_iter = data.BPTTIterator.splits(
+            (train, val, test), batch_size=batch_size, bptt_len=bptt_len, device=DEV, repeat=repeat,
+            shuffle=shuffle)
 
-	text_field.build_vocab(train, vectors=vocab.GloVe(name='6B', dim=50))
+    text_field.build_vocab(train, vectors=vocab.GloVe(name='6B', dim=50))
 
     return train_iter, val_iter, test_iter, text_field

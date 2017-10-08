@@ -14,6 +14,7 @@ from torchtext import datasets
 
 from config import args
 from model import LBL
+import utils
 
 def train(model, optimizer, data_iter, text_field, args):
 	model.train()
