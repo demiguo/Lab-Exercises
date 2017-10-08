@@ -17,6 +17,7 @@ from model import LBL
 
 def train(model, optimizer, data_iter, text_field, args):
 	model.train()
+	loss_function = nn.NLLLoss()
 	avg_loss = 0
 	total = 0
 	for batch_idx, batch in enumerate(data_iter):
@@ -42,9 +43,9 @@ def evaluate(model, data_iter, text_field, args):
 
 def main():
 	# TODO: change this API according to utils.py implementation
-	train_iter, val_iter, test_iter, text_field = utils.preprocess(args)
+	train_iter, val_iter, test_iter, text_field, pretrained_embeds = utils.preprocess(args)
 
-	model = LBL(??)	
+	model = LBL(pretrained_embeds, args)	
 	optimizer = optim.SGD(model.get_train_parameters(), lr=args.lr)
 	for epoch in range(args.epoch):
 		# TODO: do we need to return model?
