@@ -22,16 +22,21 @@ def train(model, optimizer, data_iter, text_field, args):
 	total = 0
 	for batch_idx, batch in enumerate(data_iter):
 		# TODO: fix API based on torchtext output; make sure they are Variables
-		batch_size = batch.batch_size
-		context = batch.text
-		target = batch.label 
+		context = torch.transpose(batch.text, (0,1))
+		target = batch.target[-1,:] 
+		batch_size = context.size(0)
+		if batch_idx == 0:
+			print "batch_size=", batch_size, "context.size()=", context.size(), " target.size()=", target.size()
 
 		optimizer.zero_grad()
 		output = model(x)
+
 		loss = loss_function(output, target)
 		avg_loss += loss.data.numpy()[0]
+		loss /= batch_size
 		total += batch_size
-		loss.backward(). # TODO: do i first get the avg loss?
+		
+		loss.backward() # TODO: do i first get the avg loss?
 		optimizer.step()
 
 	avg_loss /= 1.0 * batch_size
@@ -43,9 +48,9 @@ def evaluate(model, data_iter, text_field, args):
 
 def main():
 	# TODO: change this API according to utils.py implementation
-	train_iter, val_iter, test_iter, text_field, pretrained_embeds = utils.preprocess(args)
+	train_iter, val_iter, test_iter, text_field = utils.load_ptb(args)
 
-	model = LBL(pretrained_embeds, args)	
+	model = LBL(text_field.vectors, args)	
 	optimizer = optim.SGD(model.get_train_parameters(), lr=args.lr)
 	for epoch in range(args.epoch):
 		# TODO: do we need to return model?
