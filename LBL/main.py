@@ -42,9 +42,25 @@ def train(model, optimizer, data_iter, text_field, args):
 	avg_loss /= 1.0 * batch_size
 	return model, optimizer, avg_loss
 
-def evaluate(model, data_iter, text_field, args):
+def evaluate(data_iter, text_field, args):
 	model.eval()
-	print "not implemented"
+	loss_function = nn.NLLLoss()
+	avg_loss = 0
+	total = 0
+	for batch_idx, batch in enumerate(data_iter):
+		# TODO: fix API based on torchtext output; make sure they are Variables
+		context = torch.transpose(batch.text, (0,1))
+		target = batch.target[-1,:] 
+		batch_size = context.size(0)
+
+		output = model(x)
+		loss = loss_function(output, target)
+		avg_loss += loss.data.numpy()[0]
+		loss /= batch_size
+		total += batch_size
+
+	avg_loss /= 1.0 * batch_size
+	return avg_loss
 
 def main():
 	# TODO: change this API according to utils.py implementation
@@ -57,7 +73,11 @@ def main():
 		model, optimizer, avg_loss = train(model, optimizer, train_iter, text_field, args)
 		# TODO: evaluate
 		print "TRAIN [EPOCH %d]: AVG LOSS PER EXAMPLE %.5lf" % (epoch, avg_loss)
-
+		if epoch % 5 == 0:
+			avg_val_loss  = evaluate(val_iter, text_field, args)
+			avg_test_loss = evaluate(test_iter, text_field, args)
+			print "VALIDATE [EPOCH %d]: AVG LOSS PER EXAMPLE %.5lf" % (epoch, avg_val_loss)
+			print "TEST [EPOCH %d]: AVG LOSS PER EXAMPLE %.5lf" % (epoch, avg_test_loss)
 
 if __name__ == "__main__":
 	main()
