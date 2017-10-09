@@ -34,7 +34,7 @@ class LBL(nn.Module):
 
     def forward(self, context_words):
         self.batch_size = context_words.size(0)
-        assert context_words.size(1) == self.context_size
+        assert context_words.size(1) == self.context_size, "context_words.size()=%s | context_size=%d" % (context_words.size(), self.context_size)
 
         embeddings = self.embedding_layer(context_words)
         assert embeddings.size() == (self.batch_size, self.context_size, self.hidden_size) # sanity check

@@ -37,6 +37,7 @@ def train(model, optimizer, data_iter, text_field, args):
 		output = model(context)
 
 		loss = loss_function(output, target)
+		print("loss=", loss," batch_size=", batch_size, " loss/batch_size=", loss/batch_size)
 		avg_loss += loss.data.numpy()[0]
 		loss /= batch_size
 		total += batch_size
@@ -49,28 +50,39 @@ def train(model, optimizer, data_iter, text_field, args):
 
 		batch_idx += 1
 
-	avg_loss /= 1.0 * batch_size
-	return model, optimizer, avg_loss
+	print("avg_loss=",avg_loss)
+	avg_loss /= total
+	print("avg_loss/total=", avg_loss)
+	return model, optimizer, 2 ** avg_loss
 
 def evaluate(model, data_iter, text_field, args):
 	model.eval()
 	loss_function = nn.NLLLoss()
 	avg_loss = 0
 	total = 0
-	for batch_idx, batch in enumerate(data_iter):
+	iter_len = len(data_iter)
+	batch_idx = 0
+	for batch in tqdm(data_iter):
 		# TODO: fix API based on torchtext output; make sure they are Variables
 		context = torch.transpose(batch.text, 0, 1)
+		# print("batch_idx=%d, context.size()=%s" % (batch_idx, context.size()))
+
 		target = batch.target[-1,:] 
 		batch_size = context.size(0)
 
-		output = model(x)
+		output = model(context)
 		loss = loss_function(output, target)
 		avg_loss += loss.data.numpy()[0]
 		loss /= batch_size
 		total += batch_size
 
-	avg_loss /= 1.0 * batch_size
-	return avg_loss
+		if batch_idx >= iter_len - 2:
+			break
+
+		batch_idx += 1
+
+	avg_loss /=  total
+	return 2 ** avg_loss
 
 def main():
 	# TODO: change this API according to utils.py implementation
@@ -86,7 +98,7 @@ def main():
 		model, optimizer, avg_loss = train(model, optimizer, train_iter, text_field, args)
 		# TODO: evaluate
 		print("TRAIN [EPOCH %d]: AVG LOSS PER EXAMPLE %.5lf" % (epoch, avg_loss))
-		if epoch % 5 == 0:
+		if epoch % 1 == 0:
 			avg_val_loss  = evaluate(model, val_iter, text_field, args)
 			avg_test_loss = evaluate(model, test_iter, text_field, args)
 			print("VALIDATE [EPOCH %d]: AVG LOSS PER EXAMPLE %.5lf" % (epoch, avg_val_loss))
