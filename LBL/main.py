@@ -20,72 +20,70 @@ from tqdm import tqdm
 
 def train(model, optimizer, data_iter, text_field, args):
 	model.train()
-	loss_function = nn.NLLLoss()
-	avg_loss = 0
-	total = 0
+	loss_function_tot = nn.NLLLoss(size_average=False)
+	loss_function_avg = nn.NLLLoss(size_average=True)
+	total_loss = 0
+	data_size = 0
 	iter_len = len(data_iter)
 	batch_idx = 0
-	batches = [batch for batch in data_iter]
-
-	for idx in range(len(batches)):
+	for batch in data_iter:
 		# TODO: fix API based on torchtext output; make sure they are Variables
-		batch = batches[idx]
-		if idx % 100 == 0:
-			print("finish %d" % idx)
-		#print("assign batch")
 		context = torch.transpose(batch.text, 0, 1)
 		target = batch.target[-1,:] 
 		batch_size = context.size(0)
+		#if batch_idx == 0:
+		#	print("batch_size=", batch_size, "context.size()=", context.size(), " target.size()=", target.size())
 
 		optimizer.zero_grad()
 		output = model(context)
 
-		loss = loss_function(output, target)
-		avg_loss += loss.data.numpy()[0] * batch_size
-		total += batch_size
+		loss = loss_function_avg(output, target)
+		# print("loss=", loss," batch_size=", batch_size, " loss/batch_size=", loss/batch_size)
+		total_loss += loss_function_tot(output, target).data.numpy()[0]
+		data_size += batch_size
 
-		loss.backward() 
+		loss.backward() # TODO: do i first get the avg loss?
 		optimizer.step()
+
 		if batch_idx >= iter_len - 2:
 			break
 
 		batch_idx += 1
 
-	avg_loss /= total
+	avg_loss = total_loss / data_size
 	return model, optimizer, np.exp(avg_loss)
 
 def evaluate(model, data_iter, text_field, args):
 	model.eval()
-	loss_function = nn.NLLLoss()
-	avg_loss = 0
-	total = 0
+	loss_function_tot = nn.NLLLoss(size_average=False)
+	total_loss = 0
+	data_size = 0
 	iter_len = len(data_iter)
 	batch_idx = 0
-
-
-	batches = [batch for batch in data_iter]
-	for idx in range(len(batches)):
-		if idx % 100 == 0:
-			print("finish %d" % idx)
-		batch = batches[idx]
+	for batch in data_iter:
 		# TODO: fix API based on torchtext output; make sure they are Variables
 		context = torch.transpose(batch.text, 0, 1)
+		# print("batch_idx=%d, context.size()=%s" % (batch_idx, context.size()))
 
 		target = batch.target[-1,:] 
 		batch_size = context.size(0)
 
 		output = model(context)
-		loss = loss_function(output, target)
-		avg_loss += loss.data.numpy()[0] * batch_size
-		total += batch_size
+		loss = loss_function_tot(output, target) # loss is already averaged
+		total_loss += loss.data.numpy()[0]
+		data_size += batch_size
+		# loss /= batch_size
+		# total += batch_size
 
 		if batch_idx >= iter_len - 2:
 			break
 
 		batch_idx += 1
-	avg_loss /=  total
 
-	return np.exp(avg_loss)
+	# avg_loss /=  total
+	avg_loss = total_loss / data_size
+	perplexity = np.exp(avg_loss) # use exp here because the loss uses ln 
+	return perplexity
 
 def main():
 	# TODO: change this API according to utils.py implementation
@@ -95,13 +93,13 @@ def main():
         							reuse=False, repeat=False, shuffle=True)
 
 	model = LBL(text_field.vocab.vectors, args.context_size)	
-	optimizer = optim.Adam(model.get_train_parameters(), lr=args.lr)
+	# optimizer = optim.SGD(model.get_train_parameters(), lr=args.lr)
+	optimizer = optim.Adam(model.get_train_parameters())
 	for epoch in range(args.epochs):
 		# TODO: do we need to return model?
-		print("epoch begin %d" % epoch)
-		model, optimizer, avg_loss = train(model, optimizer, train_iter, text_field, args)
+		model, optimizer, train_perp = train(model, optimizer, train_iter, text_field, args)
 		# TODO: evaluate
-		print("TRAIN [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, avg_loss))
+		print("TRAIN [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, train_perp))
 		if epoch % 1 == 0:
 			val_perp  = evaluate(model, val_iter, text_field, args)
 			test_perp = evaluate(model, test_iter, text_field, args)
