@@ -54,7 +54,7 @@ def train(model, optimizer, data_iter, text_field, args):
 	print("avg_loss=",avg_loss)
 	avg_loss /= total
 	print("avg_loss/total=", avg_loss)
-	return model, optimizer, torch.exp(avg_loss)
+	return model, optimizer, np.exp(avg_loss)
 
 def evaluate(model, data_iter, text_field, args):
 	model.eval()
@@ -82,7 +82,7 @@ def evaluate(model, data_iter, text_field, args):
 		batch_idx += 1
 
 	avg_loss /=  total
-	return torch.exp(avg_loss)
+	return np.exp(avg_loss)
 
 def main():
 	# TODO: change this API according to utils.py implementation
