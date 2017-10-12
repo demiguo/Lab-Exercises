@@ -82,7 +82,7 @@ def evaluate(model, data_iter, text_field, args):
 		batch_idx += 1
 
 	avg_loss /=  total
-	return 2 ** avg_loss
+	return torch.exp(avg_loss)
 
 def main():
 	# TODO: change this API according to utils.py implementation
