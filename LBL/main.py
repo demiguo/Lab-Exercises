@@ -37,9 +37,10 @@ def train(model, optimizer, data_iter, text_field, args):
 		output = model(context)
 
 		loss = loss_function(output, target)
-		print("loss=", loss," batch_size=", batch_size, " loss/batch_size=", loss/batch_size)
-		avg_loss += loss.data.numpy()[0]
-		loss /= batch_size
+		#print("output=", output)
+		#print("target=",target)
+		#print("loss=", loss," batch_size=", batch_size, " loss/batch_size=", loss/batch_size)
+		avg_loss += loss.data.numpy()[0] * batch_size
 		total += batch_size
 
 		loss.backward() # TODO: do i first get the avg loss?
@@ -53,7 +54,7 @@ def train(model, optimizer, data_iter, text_field, args):
 	print("avg_loss=",avg_loss)
 	avg_loss /= total
 	print("avg_loss/total=", avg_loss)
-	return model, optimizer, 2 ** avg_loss
+	return model, optimizer, torch.exp(avg_loss)
 
 def evaluate(model, data_iter, text_field, args):
 	model.eval()
@@ -72,8 +73,7 @@ def evaluate(model, data_iter, text_field, args):
 
 		output = model(context)
 		loss = loss_function(output, target)
-		avg_loss += loss.data.numpy()[0]
-		loss /= batch_size
+		avg_loss += loss.data.numpy()[0] * batch_size
 		total += batch_size
 
 		if batch_idx >= iter_len - 2:
@@ -92,7 +92,7 @@ def main():
         							reuse=False, repeat=False, shuffle=True)
 
 	model = LBL(text_field.vocab.vectors, args.context_size)	
-	optimizer = optim.SGD(model.get_train_parameters(), lr=args.lr)
+	optimizer = optim.Adam(model.get_train_parameters(), lr=args.lr)
 	for epoch in range(args.epochs):
 		# TODO: do we need to return model?
 		model, optimizer, avg_loss = train(model, optimizer, train_iter, text_field, args)
