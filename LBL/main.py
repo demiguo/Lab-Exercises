@@ -109,13 +109,13 @@ def main():
 	# optimizer = optim.SGD(model.get_train_parameters(), lr=args.lr)
 	if args.optimizer == "Adamax":
 		print("Optimizer: Adamax")
-		optimizer = optim.Adamax(model.get_train_parameters(), lr=lr, weight_decay=1e-5)
+		optimizer = optim.Adamax(model.get_train_parameters(), lr=lr, weight_decay=args.l2)
 	elif args.optimizer == "Adam":
 		print("Optimizer: Adam")
-		optimizer = optim.Adam(model.get_train_parameters(), lr=lr, weight_decay=1e-5)
+		optimizer = optim.Adam(model.get_train_parameters(), lr=lr, weight_decay=args.l2)
 	elif args.optimizer == "SGD":
 		print("Optimizer: SGD")
-		optimizer = optim.SGD(model.get_train_parameters(), lr=lr, weight_decay=1e-5)
+		optimizer = optim.SGD(model.get_train_parameters(), lr=lr, weight_decay=args.l2)
 	else:
 		assert False, "Optimizer %s not found" % args.optimizer
 
