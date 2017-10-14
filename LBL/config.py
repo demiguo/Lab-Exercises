@@ -30,7 +30,7 @@ parser.add_argument("--optimizer", help="Optimizer type",
 parser.add_argument("--resume", help="Load model instead of training completely new model",
 					type=str, default="")
 parser.add_argument("--start_epoch", help="Starting epoch number",
-					type=int, default=0)
+					type=int, default=0) # will be overwritten
 
 parser.add_argument("--model_dir", help="Models Directory",
 					type=str, default="models")
