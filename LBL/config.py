@@ -22,6 +22,8 @@ parser.add_argument("--initial_lr", help="initial learning rate",
 					type=float, default=0.001)
 parser.add_argument("--dropout", help="Dropout rate",
 					type=float, default=0.)
+parser.add_argument("--l2", help="L2 Regularization (weight decay)",
+					type=float, default=1e-5)
 parser.add_argument("--optimizer", help="Optimizer type",
 					type=str, default="Adam")
 
