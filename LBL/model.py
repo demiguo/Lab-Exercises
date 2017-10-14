@@ -7,7 +7,7 @@ import numpy as np
 import re
 
 class LBL(nn.Module):
-    def __init__(self, pretrained_embeds, context_size):
+    def __init__(self, pretrained_embeds, context_size, dropout=0.):
         super(LBL, self).__init__()
 
         self.context_size = context_size # n in the paper
@@ -18,6 +18,7 @@ class LBL(nn.Module):
         self.context_layer = nn.Linear(self.hidden_size * self.context_size, self.hidden_size, bias=False) # C in the paper
         self.output_layer = nn.Linear(self.hidden_size, self.vocab_size) # dot product + bias in the paper
 
+        self.dropout = nn.Dropout(p=dropout)
         self.init_weight(pretrained_embeds) # pretrained embeds is R in the paper
 
     def get_train_parameters(self):
@@ -39,6 +40,7 @@ class LBL(nn.Module):
         embeddings = self.embedding_layer(context_words)
         assert embeddings.size() == (self.batch_size, self.context_size, self.hidden_size) # sanity check
         context_vectors = self.context_layer(embeddings.view(self.batch_size, self.context_size * self.hidden_size))
+        context_vectors = self.dropout(context_vectors)
         assert context_vectors.size() == (self.batch_size, self.hidden_size)
         raw_outputs = self.output_layer(context_vectors)
         assert raw_outputs.size() == (self.batch_size, self.vocab_size)

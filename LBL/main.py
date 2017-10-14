@@ -24,6 +24,7 @@ def train(model, optimizer, data_iter, text_field, args):
 	loss_function_avg = nn.NLLLoss(size_average=True)
 	total_loss = 0
 	data_size = 0
+	
 	iter_len = len(data_iter)
 	batch_idx = 0
 	for batch in data_iter:
@@ -91,19 +92,40 @@ def main():
 									ptb_dir='data', bptt_len=args.context_size, 
 									batch_size=args.batch_size, gpu=args.GPU, 
         							reuse=False, repeat=False, shuffle=True)
-
-	model = LBL(text_field.vocab.vectors, args.context_size)	
+	lr = args.initial_lr
+	model = LBL(text_field.vocab.vectors, args.context_size, args.dropout)	
+	print("Model: %s" % model)
 	# optimizer = optim.SGD(model.get_train_parameters(), lr=args.lr)
-	optimizer = optim.Adam(model.get_train_parameters())
+	if args.optimizer == "Adamax":
+		print("Optimizer: Adamax")
+		optimizer = optim.Adamax(model.get_train_parameters(), lr=lr, weight_decay=1e-5)
+	elif args.optimizer == "Adam":
+		print("Optimizer: Adam")
+		optimizer = optim.Adam(model.get_train_parameters(), lr=lr, weight_decay=1e-5)
+	elif args.optimizer == "SGD":
+		print("Optimizer: SGD")
+		optimizer = optim.SGD(model.get_train_parameters(), lr=lr, weight_decay=1e-5)
+	else:
+		assert False, "Optimizer %s not found" % args.optimizer
+
+	val_perps = []
 	for epoch in range(args.epochs):
 		# TODO: do we need to return model?
 		model, optimizer, train_perp = train(model, optimizer, train_iter, text_field, args)
 		# TODO: evaluate
 		print("TRAIN [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, train_perp))
-		if epoch % 1 == 0:
-			val_perp  = evaluate(model, val_iter, text_field, args)
+		val_perp  = evaluate(model, val_iter, text_field, args)
+		print("VALIDATE [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, val_perp))
+		val_perps.append(val_perp)
+
+		# adjust leraning rate
+		if len(val_perps) > args.adapt_lr_epoch and np.min(val_perps[-args.adapt_lr_epoch:]) > np.min(val_perps[:-args.adapt_lr_epoch]):
+			lr = lr * 0.5
+			for param_group in optimizer.param_groups:
+				param_group['lr'] = lr 
+
+		if epoch % 5 == 0:
 			test_perp = evaluate(model, test_iter, text_field, args)
-			print("VALIDATE [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, val_perp))
 			print("TEST [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, test_perp))
 
 if __name__ == "__main__":

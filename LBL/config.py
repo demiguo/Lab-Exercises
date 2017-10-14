@@ -15,5 +15,13 @@ parser.add_argument("--mode", help="specify test, validate, or train",
 					type=str, default="test")
 parser.add_argument("--lr", help="learning rate",
 					type=float, default=0.001)
+parser.add_argument("--adapt_lr_epoch", help="# of epochs to adapt learning rate",
+					type=int, default=5)
+parser.add_argument("--initial_lr", help="initial learning rate",
+					type=float, default=0.001)
+parser.add_argument("--dropout", help="Dropout rate",
+					type=float, default=0.)
+parser.add_argument("--optimizer", help="Optimizer type",
+					type=str, default="Adam")
 
 args = parser.parse_args()

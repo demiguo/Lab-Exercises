@@ -32,6 +32,6 @@ def load_ptb(ptb_path='data.zip', ptb_dir='data', bptt_len=5, batch_size=1, gpu=
         batch_size=batch_size, bptt_len=bptt_len, device=DEV, repeat=repeat,
         shuffle=shuffle)
 
-    text_field.build_vocab(train, vectors=torchtext.vocab.GloVe(name='6B', dim=50))
+    text_field.build_vocab(train, vectors=torchtext.vocab.GloVe(name='6B', dim=100))
 
     return train_iter, val_iter, test_iter, text_field
