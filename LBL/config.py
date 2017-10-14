@@ -1,4 +1,5 @@
 import argparse
+import datetime
 
 parser = argparse.ArgumentParser()
 
@@ -23,5 +24,16 @@ parser.add_argument("--dropout", help="Dropout rate",
 					type=float, default=0.)
 parser.add_argument("--optimizer", help="Optimizer type",
 					type=str, default="Adam")
+
+parser.add_argument("--resume", help="Load model instead of training completely new model",
+					type=str, default="")
+parser.add_argument("--start_epoch", help="Starting epoch number",
+					type=int, default=0)
+
+parser.add_argument("--model_dir", help="Models Directory",
+					type=str, default="models")
+
+now = datetime.datetime.now()
+parser.add_argument('-model_suffix', '--model_suffix', help="Additional Model Information", required=False, default="%s-%s-%s-%s-%s" % (now.year, now.month, now.day, now.hour, now.minute))
 
 args = parser.parse_args()

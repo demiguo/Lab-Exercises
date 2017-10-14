@@ -7,6 +7,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 import re
+import os, sys
 from matplotlib import pyplot as plt
 
 from torchtext import data 
@@ -87,8 +88,24 @@ def main():
 									batch_size=args.batch_size, gpu=args.GPU, 
         							reuse=False, repeat=False, shuffle=True)
 	lr = args.initial_lr
+
+
 	model = LBL(text_field.vocab.vectors, args.context_size, args.dropout)	
+
+	if args.resume != "":
+		filename = os.path.join(args.model_dir, args.resume)
+		if os.path.isfile(filename):
+			print("=> loading checkpoint %s" % filename)
+			checkpoint = torch.load(filename)
+			args.start_epoch = checkpoint["start_epoch"]
+			model.load_state_dict(checkpoint["model_state_dict"])
+			optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+			print("=> loaded checkpoint %s (start at epoch %d)" % (filename, args.start_epoch))
+		else:
+			print("=> no checkpoint found at %s" % filename)
+
 	print("Model: %s" % model)
+
 	# optimizer = optim.SGD(model.get_train_parameters(), lr=args.lr)
 	if args.optimizer == "Adamax":
 		print("Optimizer: Adamax")
@@ -103,7 +120,7 @@ def main():
 		assert False, "Optimizer %s not found" % args.optimizer
 
 	val_perps = []
-	for epoch in range(args.epochs):
+	for epoch in range(args.start_epoch, args.epochs):
 		model, optimizer, train_perp = train(model, optimizer, train_iter, text_field, args)
 		print("TRAIN [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, train_perp))
 		val_perp  = evaluate(model, val_iter, text_field, args)
@@ -113,12 +130,26 @@ def main():
 		# adjust leraning rate
 		if len(val_perps) > args.adapt_lr_epoch and np.min(val_perps[-args.adapt_lr_epoch:]) > np.min(val_perps[:-args.adapt_lr_epoch]):
 			lr = lr * 0.5
+			print("=> changing learning rate to %.8lf" % lr)
 			for param_group in optimizer.param_groups:
 				param_group['lr'] = lr 
 
 		if epoch % 5 == 0:
 			test_perp = evaluate(model, test_iter, text_field, args)
 			print("TEST [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, test_perp))
+
+		# saving model
+		def save_checkpoint(state, filename):
+			print("=> saving current model to checkpoint %s" % filename)
+			torch.save(state, filename)
+
+		checkpoint_name = os.path.join(args.model_dir, "%s-epoch%d" % (args.model_suffix, epoch))
+		save_checkpoint({
+			'start_epoch': epoch + 1,
+			'args': args,
+			'model_state_dict': model.state_dict(),
+			'optimizer_state_dict': optimizer.state_dict()
+			}, checkpoint_name)
 
 if __name__ == "__main__":
 	main()
