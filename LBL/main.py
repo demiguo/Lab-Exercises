@@ -92,20 +92,6 @@ def main():
 
 	model = LBL(text_field.vocab.vectors, args.context_size, args.dropout)	
 
-	if args.resume != "":
-		filename = os.path.join(args.model_dir, args.resume)
-		if os.path.isfile(filename):
-			print("=> loading checkpoint %s" % filename)
-			checkpoint = torch.load(filename)
-			args.start_epoch = checkpoint["start_epoch"]
-			model.load_state_dict(checkpoint["model_state_dict"])
-			optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-			print("=> loaded checkpoint %s (start at epoch %d)" % (filename, args.start_epoch))
-		else:
-			print("=> no checkpoint found at %s" % filename)
-
-	print("Model: %s" % model)
-
 	# optimizer = optim.SGD(model.get_train_parameters(), lr=args.lr)
 	if args.optimizer == "Adamax":
 		print("Optimizer: Adamax")
@@ -119,6 +105,19 @@ def main():
 	else:
 		assert False, "Optimizer %s not found" % args.optimizer
 
+	if args.resume != "":
+		filename = os.path.join(args.model_dir, args.resume)
+		if os.path.isfile(filename):
+			print("=> loading checkpoint %s" % filename)
+			checkpoint = torch.load(filename)
+			args.start_epoch = checkpoint["start_epoch"]
+			model.load_state_dict(checkpoint["model_state_dict"])
+			optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+			print("=> loaded checkpoint %s (start at epoch %d)" % (filename, args.start_epoch))
+		else:
+			print("=> no checkpoint found at %s" % filename)
+
+	print("Model: %s" % model)
 	val_perps = []
 	for epoch in range(args.start_epoch, args.epochs):
 		model, optimizer, train_perp = train(model, optimizer, train_iter, text_field, args)
