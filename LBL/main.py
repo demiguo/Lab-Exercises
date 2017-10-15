@@ -92,7 +92,7 @@ def main():
 
 	model = LBL(text_field.vocab.vectors, args.context_size, args.dropout)	
 
-	# optimizer = optim.SGD(model.get_train_parameters(), lr=args.lr)
+	# specify optimizer
 	if args.optimizer == "Adamax":
 		print("Optimizer: Adamax")
 		optimizer = optim.Adamax(model.get_train_parameters(), lr=lr, weight_decay=args.l2)
@@ -105,6 +105,7 @@ def main():
 	else:
 		assert False, "Optimizer %s not found" % args.optimizer
 
+	# load model from file
 	if args.resume != "":
 		filename = os.path.join(args.model_dir, args.resume)
 		if os.path.isfile(filename):
@@ -116,7 +117,13 @@ def main():
 			print("=> loaded checkpoint %s (start at epoch %d)" % (filename, args.start_epoch))
 		else:
 			print("=> no checkpoint found at %s" % filename)
+		# just test and return if mode is test
+		if args.mode == "test":
+			test_perp = evaluate(model, test_iter, text_field, args)
+			print("TEST [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, test_perp))
+			return
 
+	# train and evaluate
 	print("Model: %s" % model)
 	val_perps = []
 	for epoch in range(args.start_epoch, args.epochs):
@@ -133,6 +140,7 @@ def main():
 			for param_group in optimizer.param_groups:
 				param_group['lr'] = lr 
 
+		# test model every 5 epochs
 		if epoch % 5 == 0:
 			test_perp = evaluate(model, test_iter, text_field, args)
 			print("TEST [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, test_perp))
@@ -149,6 +157,10 @@ def main():
 			'model_state_dict': model.state_dict(),
 			'optimizer_state_dict': optimizer.state_dict()
 			}, checkpoint_name)
+
+	# test trained model
+	test_perp = evaluate(model, test_iter, text_field, args)
+	print("TEST [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, test_perp))
 
 if __name__ == "__main__":
 	main()
