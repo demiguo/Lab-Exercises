@@ -10,7 +10,8 @@ class LBL(nn.Module):
         self.hidden_size = pretrained_embeds.size(1)
         self.vocab_size = pretrained_embeds.size(0)
 
-        self.embedding_layer = nn.Embedding(self.vocab_size, self.hidden_size)
+        self.embedding_layer = nn.Embedding(
+                self.vocab_size, self.hidden_size, max_norm=1)
         # C in the paper
         self.context_layer = nn.Linear(
                 self.hidden_size * self.context_size,
