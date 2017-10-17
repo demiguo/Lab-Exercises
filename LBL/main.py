@@ -5,8 +5,10 @@ import os
 import numpy as np
 import torch
 import torch.nn as nn
+from torch import Tensor
 import torch.optim as optim
 import utils
+from torch.autograd import Variable
 from config import args
 from model import LBL
 
@@ -77,8 +79,7 @@ def evaluate(model, data_iter, text_field, args):
 
 
 def main():
-    train_iter, val_iter,
-    test_iter, text_field = utils.load_ptb(ptb_path='data.zip',
+    train_iter, val_iter, test_iter, text_field = utils.load_ptb(ptb_path='data.zip',
                                            ptb_dir='data',
                                            bptt_len=args.context_size,
                                            batch_size=args.batch_size,
@@ -88,6 +89,20 @@ def main():
     lr = args.initial_lr
 
     model = LBL(text_field.vocab.vectors, args.context_size, args.dropout)
+
+    # Specify embedding weights
+    embedding_dim = (model.vocab_size, model.hidden_size)
+    if args.init_weights == 'rand_norm':
+        model.embedding_layer = Variable(Tensor(np.random.normal(size=embedding_dim), requires_grad=True))
+    elif args.init_weights == 'rand_unif':
+        model.embedding_layer = Variable(Tensor(np.random.uniform(size=embedding_dim), requires_grad=True))
+    elif args.init_weights == 'ones':
+        model.embedding_layer = Variable(Tensor(np.ones(shape=embedding_dim), requires_grad=True))
+    elif args.init_weights == 'zeroes':
+        model.embedding_layer = Variable(Tensor(np.zeros(shape=embedding_dim), requires_grad=True))
+    else:
+        raise ValueError('{} is not a valid embedding weight \
+                          initializer'.format(args.init_weights))
 
     # specify optimizer
     if args.optimizer == "Adamax":
@@ -103,7 +118,7 @@ def main():
         optimizer = optim.SGD(model.get_train_parameters(),
                               lr=lr, weight_decay=args.l2)
     else:
-        assert False, "Optimizer %s not found" % args.optimizer
+        raise ValueError('{} is not a valid optimizer'.format(args.optimizer))
 
     # load model from file
     if args.resume != "":
@@ -155,7 +170,7 @@ def main():
             torch.save(state, filename)
 
         checkpoint_name = os.path.join(args.model_dir, "%s-epoch%d"
-        % (args.model_suffix, epoch))
+                                       % (args.model_suffix, epoch))
         save_checkpoint({
             'start_epoch': epoch + 1,
             'args': args,
