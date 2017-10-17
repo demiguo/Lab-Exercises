@@ -28,7 +28,7 @@ class LBL(nn.Module):
                 params.append(param)
         return params
 
-    def init_weight(self,pretrained_embeds):
+    def init_weight(self, pretrained_embeds):
         assert(pretrained_embeds.size() == (self.vocab_size, self.hidden_size))
         self.embedding_layer.weight.data.copy_(pretrained_embeds)
         self.output_layer.weight.data = self.embedding_layer.weight.data
