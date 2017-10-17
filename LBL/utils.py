@@ -3,7 +3,7 @@
 """
 Returns batches: x (barch_size, window_size) | word indices; y (batch_size, 1) | word indices of next word
 Return R matrix (embedding matrix)
-Return w2i, i2w dictionary (vocab) 
+Return w2i, i2w dictionary (vocab)
 """
 
 import os, glob, zipfile
@@ -13,8 +13,8 @@ import torchtext
 from torchtext import data, datasets, vocab
 
 
-def load_ptb(ptb_path='data.zip', ptb_dir='data', bptt_len=5, batch_size=1, gpu=False, 
-        reuse=False, repeat=False, shuffle=True):
+def load_ptb(ptb_path='data.zip', ptb_dir='data', bptt_len=5, batch_size=1,
+             gpu=False, reuse=False, repeat=False, shuffle=True):
     print ("Loading Data")
     if (not reuse) or (not os.path.exists(ptb_dir)):
         f = zipfile.ZipFile(ptb_path, 'r')
@@ -23,12 +23,13 @@ def load_ptb(ptb_path='data.zip', ptb_dir='data', bptt_len=5, batch_size=1, gpu=
 
     DEV = 0 if gpu else -1
 
-    text_field = data.Field(lower=True, batch_first=True)
+    text_field = data.Field(lower=True, batch_first=True,
+                            init_token="<s>", eos_token="</s>")
     train = datasets.LanguageModelingDataset(os.path.join(ptb_dir, 'train.txt'), text_field, newline_eos=False)
     val = datasets.LanguageModelingDataset(os.path.join(ptb_dir, 'valid.txt'), text_field, newline_eos=False)
     test = datasets.LanguageModelingDataset(os.path.join(ptb_dir, 'test.txt'), text_field, newline_eos=False)
-    
-    train_iter, val_iter, test_iter = data.BPTTIterator.splits((train, val, test), 
+
+    train_iter, val_iter, test_iter = data.BPTTIterator.splits((train, val, test),
         batch_size=batch_size, bptt_len=bptt_len, device=DEV, repeat=repeat,
         shuffle=shuffle)
 

@@ -77,13 +77,14 @@ def evaluate(model, data_iter, text_field, args):
 
 
 def main():
-    train_iter, val_iter, test_iter, text_field = utils.load_ptb(ptb_path='data.zip',
-                                                                 ptb_dir='data',
-                                                                 bptt_len=args.context_size,
-                                                                 batch_size=args.batch_size,
-                                                                 gpu=args.GPU,
-                                                                 reuse=False, repeat=False,
-                                                                 shuffle=True)
+    train_iter, val_iter,
+    test_iter, text_field = utils.load_ptb(ptb_path='data.zip',
+                                           ptb_dir='data',
+                                           bptt_len=args.context_size,
+                                           batch_size=args.batch_size,
+                                           gpu=args.GPU,
+                                           reuse=False, repeat=False,
+                                           shuffle=True)
     lr = args.initial_lr
 
     model = LBL(text_field.vocab.vectors, args.context_size, args.dropout)
@@ -91,13 +92,16 @@ def main():
     # specify optimizer
     if args.optimizer == "Adamax":
         print("Optimizer: Adamax")
-        optimizer = optim.Adamax(model.get_train_parameters(), lr=lr, weight_decay=args.l2)
+        optimizer = optim.Adamax(model.get_train_parameters(),
+                                 lr=lr, weight_decay=args.l2)
     elif args.optimizer == "Adam":
         print("Optimizer: Adam")
-        optimizer = optim.Adam(model.get_train_parameters(), lr=lr, weight_decay=args.l2)
+        optimizer = optim.Adam(model.get_train_parameters(),
+                               lr=lr, weight_decay=args.l2)
     elif args.optimizer == "SGD":
         print("Optimizer: SGD")
-        optimizer = optim.SGD(model.get_train_parameters(), lr=lr, weight_decay=args.l2)
+        optimizer = optim.SGD(model.get_train_parameters(),
+                              lr=lr, weight_decay=args.l2)
     else:
         assert False, "Optimizer %s not found" % args.optimizer
 
@@ -110,7 +114,8 @@ def main():
             args.start_epoch = checkpoint["start_epoch"]
             model.load_state_dict(checkpoint["model_state_dict"])
             optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-            print("=> loaded checkpoint %s (start at epoch %d)" % (filename, args.start_epoch))
+            print("=> loaded checkpoint %s (start at epoch %d)"
+                  % (filename, args.start_epoch))
         else:
             print("=> no checkpoint found at %s" % filename)
         # just test and return if mode is test
@@ -123,15 +128,17 @@ def main():
     print("Model: %s" % model)
     val_perps = []
     for epoch in range(args.start_epoch, args.epochs):
-        model, optimizer, train_perp = train(model, optimizer, train_iter, text_field, args)
+        model, optimizer, train_perp = train(model, optimizer, train_iter,
+                                             text_field, args)
         print("TRAIN [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, train_perp))
         val_perp = evaluate(model, val_iter, text_field, args)
         print("VALIDATE [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, val_perp))
         val_perps.append(val_perp)
 
         # adjust leraning rate
-        if len(val_perps) > args.adapt_lr_epoch and np.min(
-                val_perps[-args.adapt_lr_epoch:]) > np.min(val_perps[:-args.adapt_lr_epoch]):
+        if len(val_perps) > args.adapt_lr_epoch and \
+           np.min(val_perps[-args.adapt_lr_epoch:]) > \
+           np.min(val_perps[:-args.adapt_lr_epoch]):
             lr = lr * 0.5
             print("=> changing learning rate to %.8lf" % lr)
             for param_group in optimizer.param_groups:
@@ -147,7 +154,8 @@ def main():
             print("=> saving current model to checkpoint %s" % filename)
             torch.save(state, filename)
 
-        checkpoint_name = os.path.join(args.model_dir, "%s-epoch%d" % (args.model_suffix, epoch))
+        checkpoint_name = os.path.join(args.model_dir, "%s-epoch%d"
+        % (args.model_suffix, epoch))
         save_checkpoint({
             'start_epoch': epoch + 1,
             'args': args,
