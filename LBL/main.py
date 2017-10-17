@@ -5,10 +5,8 @@ import os
 import numpy as np
 import torch
 import torch.nn as nn
-from torch import Tensor
 import torch.optim as optim
 import utils
-from torch.autograd import Variable
 from config import args
 from model import LBL
 
@@ -111,7 +109,7 @@ def main():
     else:
         raise ValueError('{} is not a valid embedding weight \
                           initializer'.format(args.init_weights))
-    model.output_layer..weights.data = model.embedding_layer.weights.data
+    model.output_layer.weights.data = model.embedding_layer.weights.data
 
     # specify optimizer
     if args.optimizer == "Adamax":
@@ -145,7 +143,7 @@ def main():
         # just test and return if mode is test
         if args.mode == "test":
             test_perp = evaluate(model, test_iter, text_field, args)
-            print("TEST [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, test_perp))
+            print("TEST PERPLEXITY %.5lf" % test_perp)
             return
 
     # train and evaluate
