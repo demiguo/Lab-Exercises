@@ -9,6 +9,7 @@ import torch.optim as optim
 import utils
 from config import args
 from model import LBL
+from torch import Tensor
 
 
 def train(model, optimizer, data_iter, text_field, args):
@@ -93,25 +94,27 @@ def main():
     # Specify embedding weights
     embedding_dim = (model.vocab_size, model.hidden_size)
     if args.init_weights == 'rand_norm':
-        model.embedding_layer.weights.data = \
-            np.random.normal(size=embedding_dim)
+        model.embedding_layer.weight.data = \
+            Tensor(np.random.normal(size=embedding_dim))
         print('Initializing random normal weights for embedding')
     elif args.init_weights == 'rand_unif':
-        model.embedding_layer.weights.data = \
-            np.random.uniform(size=embedding_dim)
+        model.embedding_layer.weight.data = \
+            Tensor(np.random.uniform(size=embedding_dim))
         print('Initializing random uniform weights for embedding')
     elif args.init_weights == 'ones':
-        model.embedding_layer.weights.data = np.ones(shape=embedding_dim)
+        model.embedding_layer.weight.data = \
+            Tensor(np.ones(shape=embedding_dim))
         print('Initializing all ones as weights for embedding')
     elif args.init_weights == 'zeroes':
-        model.embedding_layer.weights.data = np.zeros(shape=embedding_dim)
+        model.embedding_layer.weight.data = \
+            Tensor(np.zeros(shape=embedding_dim))
         print('Initializing all zeroes as weights for embedding')
     else:
         raise ValueError('{} is not a valid embedding weight \
                           initializer'.format(args.init_weights))
-    model.output_layer.weights.data = model.embedding_layer.weights.data
+    model.output_layer.weight.data = model.embedding_layer.weight.data
 
-    # specify optimizer
+    # Specify optimizer
     if args.optimizer == "Adamax":
         print("Optimizer: Adamax")
         optimizer = optim.Adamax(model.get_train_parameters(),

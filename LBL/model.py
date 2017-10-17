@@ -20,8 +20,6 @@ class LBL(nn.Module):
             nn.Linear(self.hidden_size, self.vocab_size)
 
         self.dropout = nn.Dropout(p=dropout)
-        self.embedding_layer = None
-        self.output_layer = None
 
     def get_train_parameters(self):
         params = []
