@@ -131,7 +131,7 @@ def main():
         raise ValueError('{} is not a valid optimizer'.format(args.optimizer))
 
     # load model from file
-    if args.resume != "":
+    if args.resume != "NONE":
         filename = os.path.join(args.model_dir, args.resume)
         if os.path.isfile(filename):
             print("=> loading checkpoint %s" % filename)
