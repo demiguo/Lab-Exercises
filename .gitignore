@@ -94,6 +94,6 @@ ENV/
 .ropeproject
 
 *.txt
-.idea
+.idea/
 # torchtext cache
 .vector_cache/
