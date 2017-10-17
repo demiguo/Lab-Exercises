@@ -1,10 +1,5 @@
-import torch
-import torch.autograd as autograd
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
-import numpy as np
-import re
 
 
 class LBL(nn.Module):
@@ -44,7 +39,7 @@ class LBL(nn.Module):
         embeddings = self.embedding_layer(context_words)
         # sanity check
         assert embeddings.size() == \
-               (self.batch_size, self.context_size, self.hidden_size)
+            (self.batch_size, self.context_size, self.hidden_size)
         context_vectors = self.context_layer(embeddings.view(
                 self.batch_size, self.context_size * self.hidden_size))
         context_vectors = self.dropout(context_vectors)
