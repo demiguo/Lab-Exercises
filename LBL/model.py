@@ -21,12 +21,12 @@ class LBL(nn.Module):
         self.dropout = nn.Dropout(p=dropout)
         self.embedding_layer = None
         self.output_layer = None
-        self.init_weight(pretrained_embeds) # pretrained embeds is R in the paper
+        # self.init_weight(pretrained_embeds) # pretrained embeds is R in the paper
 
     def get_train_parameters(self):
         params = []
         for param in self.parameters():
-            if param.requires_grad == True:
+            if param.requires_grad:
                 params.append(param)
         return params
     #
