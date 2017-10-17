@@ -5,8 +5,10 @@ import os
 import numpy as np
 import torch
 import torch.nn as nn
+from torch import Tensor
 import torch.optim as optim
 import utils
+from torch.autograd import Variable
 from config import args
 from model import LBL
 
@@ -88,6 +90,19 @@ def main():
 
     model = LBL(text_field.vocab.vectors, args.context_size, args.dropout)
 
+    # Specify embedding weights
+    embedding_dim = (model.vocab_size, model.hidden_size)
+    if args.init_weights == 'rand_norm':
+        model.embedding_layer = Variable(Tensor(np.random.normal(size=embedding_dim), requires_grad=True))
+    elif args.init_weights == 'rand_unif':
+        model.embedding_layer = Variable(Tensor(np.random.uniform(size=embedding_dim), requires_grad=True))
+    elif args.init_weights == 'ones':
+        model.embedding_layer = Variable(Tensor(np.ones(shape=embedding_dim), requires_grad=True))
+    elif args.init_weights == 'zeroes':
+        model.embedding_layer = Variable(Tensor(np.zeros(shape=embedding_dim), requires_grad=True))
+    else:
+        raise ValueError('{} is not a valid embedding weight initializer'.format(args.init_weights))
+
     # specify optimizer
     if args.optimizer == "Adamax":
         print("Optimizer: Adamax")
@@ -99,7 +114,7 @@ def main():
         print("Optimizer: SGD")
         optimizer = optim.SGD(model.get_train_parameters(), lr=lr, weight_decay=args.l2)
     else:
-        assert False, "Optimizer %s not found" % args.optimizer
+        raise ValueError('{} is not a valid optimizer'.format(args.optimizer))
 
     # load model from file
     if args.resume != "":
@@ -129,10 +144,10 @@ def main():
         print("VALIDATE [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, val_perp))
         val_perps.append(val_perp)
 
-        # adjust leraning rate
+        # adjust learning rate
         if len(val_perps) > args.adapt_lr_epoch and np.min(
                 val_perps[-args.adapt_lr_epoch:]) > np.min(val_perps[:-args.adapt_lr_epoch]):
-            lr = lr * 0.5
+            lr *= 0.5
             print("=> changing learning rate to %.8lf" % lr)
             for param_group in optimizer.param_groups:
                 param_group['lr'] = lr

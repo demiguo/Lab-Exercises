@@ -19,6 +19,8 @@ class LBL(nn.Module):
         self.output_layer = nn.Linear(self.hidden_size, self.vocab_size) # dot product + bias in the paper
 
         self.dropout = nn.Dropout(p=dropout)
+        self.embedding_layer = None
+        self.output_layer = None
         self.init_weight(pretrained_embeds) # pretrained embeds is R in the paper
 
     def get_train_parameters(self):
@@ -27,11 +29,11 @@ class LBL(nn.Module):
             if param.requires_grad == True:
                 params.append(param)
         return params
-
-    def init_weight(self, pretrained_embeds):
-        assert(pretrained_embeds.size() == (self.vocab_size, self.hidden_size))
-        self.embedding_layer.weight.data.copy_(pretrained_embeds)
-        self.output_layer.weight.data = self.embedding_layer.weight.data
+    #
+    # def init_weight(self, pretrained_embeds):
+    #     assert(pretrained_embeds.size() == (self.vocab_size, self.hidden_size))
+    #     self.embedding_layer.weight.data.copy_(pretrained_embeds)
+    #     self.output_layer.weight.data = self.embedding_layer.weight.data
 
     def forward(self, context_words):
         self.batch_size = context_words.size(0)
