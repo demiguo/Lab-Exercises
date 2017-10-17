@@ -79,27 +79,33 @@ def evaluate(model, data_iter, text_field, args):
 
 
 def main():
-    train_iter, val_iter, test_iter, text_field = utils.load_ptb(ptb_path='data.zip',
-                                           ptb_dir='data',
-                                           bptt_len=args.context_size,
-                                           batch_size=args.batch_size,
-                                           gpu=args.GPU,
-                                           reuse=False, repeat=False,
-                                           shuffle=True)
-    lr = args.initial_lr
+    train_iter, val_iter, test_iter, text_field = utils.load_ptb(
+        ptb_path='data.zip',
+        ptb_dir='data',
+        bptt_len=args.context_size,
+        batch_size=args.batch_size,
+        gpu=args.GPU,
+        reuse=False, repeat=False,
+        shuffle=True
+    )
 
+    lr = args.initial_lr
     model = LBL(text_field.vocab.vectors, args.context_size, args.dropout)
 
     # Specify embedding weights
     embedding_dim = (model.vocab_size, model.hidden_size)
     if args.init_weights == 'rand_norm':
-        model.embedding_layer = Variable(Tensor(np.random.normal(size=embedding_dim), requires_grad=True))
+        model.embedding_layer = np.random.normal(size=embedding_dim)
+        print('Initializing random unifrom weights for embedding')
     elif args.init_weights == 'rand_unif':
-        model.embedding_layer = Variable(Tensor(np.random.uniform(size=embedding_dim), requires_grad=True))
+        model.embedding_layer = np.random.uniform(size=embedding_dim)
+        print('Initializing random unifrom weights for embedding')
     elif args.init_weights == 'ones':
-        model.embedding_layer = Variable(Tensor(np.ones(shape=embedding_dim), requires_grad=True))
+        model.embedding_layer = np.ones(shape=embedding_dim)
+        print('Initializing random unifrom weights for embedding')
     elif args.init_weights == 'zeroes':
-        model.embedding_layer = Variable(Tensor(np.zeros(shape=embedding_dim), requires_grad=True))
+        model.embedding_layer = np.zeros(shape=embedding_dim)
+        print('Initializing random unifrom weights for embedding')
     else:
         raise ValueError('{} is not a valid embedding weight \
                           initializer'.format(args.init_weights))
@@ -154,7 +160,7 @@ def main():
         if len(val_perps) > args.adapt_lr_epoch and \
            np.min(val_perps[-args.adapt_lr_epoch:]) > \
            np.min(val_perps[:-args.adapt_lr_epoch]):
-            lr = lr * 0.5
+            lr *= 0.5
             print("=> changing learning rate to %.8lf" % lr)
             for param_group in optimizer.param_groups:
                 param_group['lr'] = lr
