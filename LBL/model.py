@@ -1,6 +1,8 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+import numpy as np
+from torch.autograd import Variable
 
 class LBL(nn.Module):
     def __init__(self, pretrained_embeds, context_size, dropout=0.):
@@ -11,7 +13,8 @@ class LBL(nn.Module):
         self.vocab_size = pretrained_embeds.size(0)
 
         self.embedding_layer = nn.Embedding(
-                self.vocab_size, self.hidden_size)#, max_norm=1, norm_type=2)
+                self.vocab_size, self.hidden_size)
+        self.max_norm_embedding()
         # C in the paper
         self.context_layer = nn.Linear(
                 self.hidden_size * self.context_size,
@@ -28,6 +31,16 @@ class LBL(nn.Module):
             if param.requires_grad:
                 params.append(param)
         return params
+
+    def max_norm_embedding(self, max_norm=1):
+        norms = torch.norm(self.embedding_layer.weight, p=2, dim=1)
+        to_rescale = Variable(torch.from_numpy(
+                np.where(norms.data.numpy() > max_norm)[0]))
+        norms = torch.norm(self.embedding_layer(to_rescale), p=2, dim=1).data
+        scaled = self.embedding_layer(to_rescale).div(
+                Variable(norms.view(len(to_rescale), 1).expand_as(
+                        self.embedding_layer(to_rescale)))).data
+        self.embedding_layer.weight.data[to_rescale.long().data] = scaled
 
     def forward(self, context_words):
         self.batch_size = context_words.size(0)

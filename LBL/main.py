@@ -37,7 +37,8 @@ def train(model, optimizer, data_iter, text_field, args):
         loss.backward()
         # update parameters
         optimizer.step()
-
+        # enforce the max_norm constraint
+        model.max_norm_embedding()
         # skip the last batch
         if batch_idx >= iter_len - 2:
             break
@@ -160,7 +161,7 @@ def main():
         print("VALIDATE [EPOCH %d]: PERPLEXITY %.5lf" % (epoch, val_perp))
         val_perps.append(val_perp)
 
-        # adjust leraning rate
+        # adjust learning rate
         if len(val_perps) > args.adapt_lr_epoch and \
            np.min(val_perps[-args.adapt_lr_epoch:]) > \
            np.min(val_perps[:-args.adapt_lr_epoch]):
